@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title of the document</title>
+    <link rel="stylesheet" href="../static/bootstrap-3.3.7-dist/js/bootstrap.min.js"
+          th:href="@{/bootstrap-3.3.7-dist/js/bootstrap.min.js}"/>
+    <script src="../static/js/jquery-3.3.1.min.js" th:src="@{/js/jquery-3.3.1.min.js}"></script>
+    <script src="../static/js/thingjs.min-v1.2.2.5.js" th:src="@{/js/thingjs.min-v1.2.2.5.js}"></script>
+    <script src="../static/bootstrap-3.3.7-dist/js/bootstrap.js"
+            th:src="@{/bootstrap-3.3.7-dist/js/bootstrap.js}"></script>
+    <script th:src="@{/js/thing.widget.min.js}" src="../static/js/thing.widget.min.js">
+
+    </script>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0
+    }
+
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    header {
+        position: absolute;
+        z-index: 99;
+        background-color: #ffffffc2;
+        width: 100%;
+    }
+
+    ul li {
+        float: left;
+        padding: 0 5px;
+        list-style: none;
+        cursor: pointer;
+    }
+
+    img {
+        width: 60px;
+    }
+</style>
+
+<body>
+<div id="div3d">
+    <header>
+        <div class="col-md-6" style="height: 50px;line-height: 50px;">
+            <span><a onclick="showSpace();" href="#">空间统计</a></span>
+            <span><a onclick="test();" href="#">打开机柜</a></span>
+            <span><a onclick="test1();" href="#">关闭机柜</a></span>
+            <span><a onclick="destroy_curObj();" href="#">删除</a></span>
+            <input type="hidden" th:value="${t}" class="scene"/>
+        </div>
+        <div class="col-md-6">
+            <ul class="ui" style="float: right;">
+                <li attr-url="http://model.3dmomoda.cn/models/47f34ce2c5a14b6d8fd4e80974394a55/0/gltf">
+                    <img src="http://model.3dmomoda.cn/models/47f34ce2c5a14b6d8fd4e80974394a55/3/screenshot.jpg"/>
+                </li>
+                <li attr-url="http://model.3dmomoda.cn/models/9b6148cde5254e8a8608f8a628612fa3/0/gltf">
+                    <img src="http://model.3dmomoda.cn/models/9b6148cde5254e8a8608f8a628612fa3/7/screenshot.jpg"/>
+                </li>
+
+            </ul>
+        </div>
+    </header>
+</div>
+<script>
+    app = new THING.App({
+        url: './scene'
+        //loaderResourceUrl: './scene/models'
+    });
+
+
+    var campus;
+    app.on('load', function (ev) {
+        campus = ev.campus;
+        app.level.change(ev.campus)
+        createAllThings();
+    });
+
+    app.on(THING.EventType.LeaveLevel, '.Campus', function (ev) {
+        var object = ev.object;
+    }, 'customLevelSceneOperations');
+
+    //  暂停默认退出行为
+    app.pauseEvent(THING.EventType.LeaveLevel, '.Campus', THING.EventTag.LevelSceneOperations);
+
+
+    //打开机柜门
+    function test() {
+        app.query('.Thing').not('#door1').forEach(function (ev) {
+            ev.playAnimation('open1');
+            createRacks(ev);
+        });
+    }
+
+    //关闭柜门
+    function test1() {
+        app.query('.Thing').not('#door1').forEach(function (ev) {
+            destroyRacks(ev);
+            ev.playAnimation('close1');
+        });
+    }
+
+    const RACK_UNIT_HEIGHT = 0.0445;
+
+    //加载物体
+
+    function gen_rack_info() {
+        var type2 = ["PC服务器", "路由器"];
+        var type3 = ["IBM", "HP", "DELL"];
+        var people = ["王WW", "李LL", "张ZZ"];
+        var info = {
+            "基本信息": {
+                "一级分类": "微机",
+                "二级分类": type2[Math.randomInt(0, 1)],
+                "设备类型": type3[Math.randomInt(0, 2)],
+                "编号": "00" + Math.randomInt(0, 9),
+                "使用人": people[Math.randomInt(0, 2)],
+                "管理员": people[Math.randomInt(0, 2)],
+                "上架时间": "" + Math.randomInt(10, 23) + ":" + Math.randomInt(10, 23),
+            },
+            "扩展信息": {
+                "信息XX": Math.ceil(Math.random() * 27 + 25) + "",
+                "信息YY": Math.ceil(Math.random() * 25 + 20) + "",
+                "信息ZZ": Math.ceil(Math.random() * 27 + 25) + "",
+                "信息AA": Math.ceil(Math.random() * 25 + 20) + "",
+                "信息BB": Math.ceil(Math.random() * 27 + 25) + "",
+                "信息CC": Math.ceil(Math.random() * 25 + 20) + "",
+                "信息DD": Math.ceil(Math.random() * 25 + 20) + "",
+            }
+        };
+        return info;
+    }
+
+    class Rack extends THING.Thing {
+        constructor(app) {
+            super(app);
+            this.isRack = true;
+            this.info = gen_rack_info();
+        }
+
+        createUI() {
+            var ui = new THING.widget.Panel({
+                titleText: this.name,
+                closeIcon: true,
+                dragable: true,
+                retractable: true,
+                hasTitle: true,
+                width: "300px",
+            });
+            ui.zIndex = 999999;//设置ui排序
+            ui.addTab(this.info);
+            ui.position = [390, 350];
+            this.ui = ui;
+            return ui;
+        }
+
+        showUI(boolValue) {
+            if (!this.ui)
+                this.createUI();
+            this.ui.show(boolValue);
+        }
+    }
+
+    THING.factory.registerClass('Rack', Rack);
+    Rack.current = null;
+
+    function createRack(obj, url, u) {
+        var y = u * RACK_UNIT_HEIGHT;
+        // var cabinet = obj;
+        var rack = app.create({
+            type: 'Rack',
+            name: 'rack',
+            url: url,
+            complete: function () {
+                obj.add({
+                    object: this,
+                    /*  basePoint: 'BasePoint',*/
+                    localPosition: [0, y, 0],
+                    localAngles: [0, 0, 0]
+                });
+
+            }
+        });
+        return rack;
+    }
+
+    const RackModels = [
+        ['http://model.3dmomoda.cn/models/3817338017ff4776a5dd05f03a3e2fd4/0/gltf', 1],
+        ['http://model.3dmomoda.cn/models/37972dd2c96c4a37a3245a00bee3628b/0/gltf', 2]
+    ];
+
+    //创建机盒
+    function createRacks(obj) {
+        var curUPos = 0;
+        var x = Math.randomInt(3, 20);
+        for (var i = 0; i < x; i++) {
+            var pair = RackModels[Math.randomInt(0, RackModels.length - 1)];
+            var url = pair[0];
+            var uHeight = pair[1];
+            var rack = createRack(obj, url, curUPos);
+            // obj.racks = [];
+            // obj.racks.push(rack);
+            curUPos += uHeight;
+        }
+        return rack;
+    }
+
+    //ui界面显示
+    app.on('click', '.Rack', null, function (ev) {
+        if (Rack.current == this)
+            return;
+
+        if (Rack.current) {
+            Rack.current.showUI(false);
+            Rack.current = null;
+        }
+        Rack.current = this;
+        this.showUI(true);
+    });
+
+    //销毁机盒
+    function destroyRacks(obj) {
+        var racks = app.query(".Rack");
+        for (var i = 0; i < racks.length; i++) {
+            racks[i].destroy();
+        }
+        racks = [];
+    }
+
+    //空间统计
+    var showBar = true;//判断是否创建盒子
+    //盒子的颜色
+    const BarGraphColors = ['#0000ff', '#00ffff', '#00ff00', '#ff0000', '#ff00ff', '#ffff00'];
+
+    function showSpace() {
+        app.query('.Thing').not('#door1').forEach(function (obj) {
+            showBarGraph(showBar, obj);
+        });
+        showBar = !showBar;
+    }
+
+
+    function showBarGraph(bool, obj) {
+        if (bool) {
+            // 确认创建了盒子
+            createBarGraph(obj);
+            // 隐藏机柜，显示盒子
+            obj.visible = false;
+            obj.barGraph.visible = true;
+            obj.barGraph.style.color = Math.randomFromArray(BarGraphColors);
+            //this.barGraph.style.opacity = 0.9;
+            // 缩放盒子
+            obj.barGraph.scale = [1, 0.1, 1];
+            obj.barGraph.scaleTo({
+                scale: [1, Math.randomFloat(0.2, 1.0), 1],
+                time: 400,
+                lerpType: THING.LerpType.Linear.Quadratic
+            });
+        } else {
+            // 隐藏盒子，显示机柜
+            obj.visible = true;
+            if (obj.barGraph)
+                obj.barGraph.visible = false;
+        }
+    }
+
+    function createBarGraph(obj) {
+        if (obj.barGraph)
+            return;
+
+        var box = app.create({
+            type: 'Box',
+            width: obj.size[0] * 0.9,
+            height: obj.size[1],
+            depth: obj.size[2] * 0.9,
+            position: obj.position,
+            center: 'Bottom'
+        });
+        obj.barGraph = box;
+        console.log(obj.barGraphs);
+    }
+
+    $(document).ready(function () {
+
+        $('ul li').on('mousedown', function () {
+            createThing($(this).attr('attr-url'));
+        });
+    });
+
+
+    var _thing = false,// 新建的物体对象
+        curObj,// 当前选中的物体
+        _preSelThing = false;// 上一次选中的物体
+
+
+    //创建已经存在的模型
+    function createAllThings() {
+        var scene = $(".scene").val();
+        $.ajax({
+            type: 'GET',
+            url: 'selectAllModels',
+            data: {
+                "scene": scene
+            },
+            traditional: true,
+            dataType: 'json',
+            success: function (data) {
+                for (let i = 0; i < data.length; i++) {
+                    console.log("x:" + data[i].positionX + "y:" + data[i].positionY + "z:" + data[i].positionZ);
+                    thing1 = app.create({
+                        id:data[i].modelId,
+                        type: data[i].modelType,
+                        url: data[i].modelUrl,
+                        position: [data[i].positionX, data[i].positionY, data[i].positionZ],
+                        parent: app.query('#115')[0],
+                        complete: function () {
+                            createMarker(this, 1);
+                        }
+                    });
+                    thing1.on('mouseon', '.Thing', function (ev) {
+                        // 创建widget (动态绑定数据用)
+                        this.children[0].visible = true;
+                    })
+                    thing1.on('mouseoff', '.Thing', function () {
+                        this.children[0].visible = false;
+                    })
+                }
+            }
+        });
+        // 鼠标拾取物体显示边框
+        app.on('singleclick', '.Thing', function (ev) {
+            /* _thing = ev.object;*/
+            addControl(ev.object);
+        });
+
+    }
+
+    //创建不存在的物体
+    function createThing(url) {
+        //创建物体
+        _thing = app.create({
+            type: 'Thing',
+            url,
+            position: [0, 0, 0],
+        });
+
+        // 防止拖动过程中获取时间坐标的时候，对位置进行重复拾取
+        _thing.pickable = false;
+
+        // 给对象绑定上选择事件
+        _thing.on('singleclick', function (ev) {
+            addControl(ev.object);
+        }, 'newthing');
+        if (_preSelThing) {
+            _preSelThing.removeControl('axisControl');
+            curObj = false;
+            _preSelThing = false;
+        }
+
+        createMarker(_thing, 1);
+        _thing.on('mouseon', function (ev) {
+            // 创建widget (动态绑定数据用)
+            this.children[0].visible = true;
+        });
+        _thing.on('mouseoff', function () {
+            this.children[0].visible = false;
+        });
+        // 关闭摄像机转动
+        app.camera.enableRotate = false;
+    }
+
+
+    // 物体跟随鼠标移动
+    app.on('mousemove', function (ev) {
+        if (_thing) {
+            var worldPosition = app.picker.pickWorldPosition(ev.clientX, ev.clientY);
+            if (!worldPosition) {
+                worldPosition = app.camera.screenToWorld(ev.clientX, ev.clientY);
+            }
+            _thing.position = worldPosition;
+        }
+    }, 'g');
+
+
+    // 鼠标右键点击取消所有控制轴
+    app.on('mousedown', function (ev) {
+        if (ev.button == 2) {
+            if (_preSelThing) {
+                _preSelThing.removeControl('axisControl');
+                curObj = false;
+                _preSelThing = false;
+            }
+        }
+    }, 'g');
+
+
+    // 鼠标抬起的操作,保存对象的修改
+    app.on('mouseup', function (ev) {
+        if (_thing) {
+            // 重新让物体开启拾取
+            _thing.pickable = true;
+            // 出发点击事件来给物体添加控制轴
+            _preSelThing = _thing;
+            _thing.addControl(new THING.AxisTransformControl(_thing), 'axisControl');
+            save(_thing);
+            _thing = false;
+        }
+        if (curObj) {
+            save(curObj);
+        }
+        // 开启摄像机转动
+        app.camera.enableRotate = true;
+
+    }, 'g');
+
+    // 将原有的对象绑定click事件
+    app.on('singleclick', '[type=desk]', function (ev) {
+        addControl(ev.object);
+    }, 'update');
+
+    var i=0;
+    function save(obj) {
+        var scene = $(".scene").val();
+        $.ajax({
+            type: 'GET',
+            url: 'saveMode',
+            data: {
+                "scene": scene,
+                "modelId": obj.id,
+                "modelType": obj.type,
+                "modelUrl": obj.url,
+                "position": obj.position
+            },
+            traditional: true,
+            dataType: 'text',
+            success: function (data) {
+                console.log("保存成功");
+            }
+        });
+    }
+
+    function addControl(obj) {
+        alert(obj.id);
+        curObj = obj;
+        if (!obj.hasControl('axisControl')) {
+            obj.addControl(new THING.AxisTransformControl(obj), 'axisControl');
+        }
+        if (_preSelThing && _preSelThing.id != obj.id) {
+            _preSelThing.removeControl('axisControl');
+        }
+        _preSelThing = obj;
+    }
+
+    function createMarker(obj, name) {
+        function createTextCanvas(text) {
+            let canvas = document.createElement("canvas");
+            // canvas.width = 100;
+            // canvas.height = 100;
+
+
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "rgb(112,128,144)";
+            ctx.beginPath();
+            ctx.rect(90, 50, 100, 75);
+            ctx.fill();
+
+            ctx.fillStyle = "rgb(255, 255, 255)";
+            ctx.font = "20px sans-serif";
+            // ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.globalAlpha = 0.5;
+            ctx.fillText(text, 115, 90);
+            return canvas;
+        }
+
+        var m = app.create({
+            type: "Marker",
+            offset: [0, 4, 0],
+            size: 3,
+            canvas: createTextCanvas('机柜' + name),
+            visible: false,
+            color: '#ff0000',
+            parent: obj
+        });
+        return m
+    }
+
+    //删除场景内的模型
+    function destroy_curObj() {
+        var scene = $(".scene").val();
+        $.ajax({
+            type: 'GET',
+            url: 'delModelsByScene',
+            data: {
+                "scene": scene
+            },
+            dataType: 'text',
+            success: function (data) {
+                window.location.href = "lookOneBS?title=" + scene;
+            }
+        });
+    }
+
+</script>
+</body>
+
+</html>

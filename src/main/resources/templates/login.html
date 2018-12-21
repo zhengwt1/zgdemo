@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+</head>
+<body style="height:100%;">
+<div>
+    <div style=" position:absolute; left:0; top:0px;background-color:midnightblue; width: 60%;height: 100%; float: left;">
+        <img style="position:absolute; left:10%; top:40%;width:400px;height:200px;" src="../static/images/thingjs.jpg"
+             th:src="@{/images/thingjs.jpg}">
+    </div>
+    <div style="float: right;width:40%;">
+        <form method="post" th:action="@{/login}">
+            <table style="position:absolute;left:70%;top: 400px ">
+                <tr>
+                    <th></th>
+                    <td>
+                        <img src="../static/images/uinova.jpg" th:src="@{/images/uinova.jpg}">
+                    </td>
+                </tr>
+                <tr style="width:300px; ">
+                    <th>账号</th>
+                    <td><input type="text" name="name" th:name="name" id="name" placeholder=""></td>
+                </tr>
+                <tr style="width:300px; ">
+                    <th>密码</th>
+                    <td><input type="password" name="password" th:name="password" id="password" placeholder=""></td>
+                </tr>
+                <tr style="width:300px; ">
+                    <th></th>
+                    <td><input type="submit" value="提交"></td>
+                </tr>
+
+            </table>
+        </form>
+    </div>
+</div>
+</body>
+</html>

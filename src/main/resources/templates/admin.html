@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/bootstrap-3.3.7-dist/css/bootstrap.min.css}"
+          href="../static/bootstrap-3.3.7-dist/css/bootstrap.min.css"/>
+    <script src="../static/js/jquery.min.js" th:src="@{/js/jquery.min.js}"></script>
+    <script src="../static/bootstrap-3.3.7-dist/js/bootstrap.min.js"
+            th:src="@{/bootstrap-3.3.7-dist/js/bootstrap.min.js}"></script>
+    <script src="../static/layer-v3.1.1/layer/layer.js" th:src="@{/layer-v3.1.1/layer/layer.js}"></script>
+    <title>管理页面</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        header {
+            background-color: darkgray;
+            width: 100%;
+        }
+
+        .log {
+            width: 100px;
+
+        }
+
+        .header_r {
+            display: inline-block;
+            height: 57px;
+            text-align: center;
+        }
+
+        .tip {
+            float: left;
+            margin-top: 20px;
+        }
+
+        .size {
+            font-size: 30px;
+        }
+
+        .color {
+            color: #9d9d9d;
+        }
+
+        #word {
+            margin-top: 80px;
+            margin-left: 25%;
+            width: 300px;
+        }
+
+        .model {
+            float: left;
+            margin-left: 10px;
+            margin-top: 10px;
+            background-color: #c4e3f3;
+            width: 250px;
+            height: 280px;
+            border: white;
+        }
+
+        .model_img {
+            width: 200px;
+            height: 150px;
+        }
+
+        .button {
+            background-color: #2b542c;
+            color: white;
+        }
+
+        .button_1 {
+            background-color: #c4e3f3;
+            color: black;
+        }
+
+        ul li {
+            list-style: none;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div ><img class="log" src="../static/images/thingjs.jpg"
+                               th:src="@{/images/thingjs.jpg}"></div>
+
+</header>
+<div class="tip"><span class="size">基站模版</span><span class="color">可复制新基站场景</span></div>
+<div>
+    <form method="post" th:action="@{/selectLikeName}">
+        <input type="text" th:name="name"  id="word" placeholder="请输入基站名称"><input type="submit" value="搜索">
+    </form>
+</div>
+<div class="model" th:each="basestation:${bslist}">
+    <div style="margin-left: 24px; margin-top: 10px">
+        <a th:href="@{'/lookOneBS?title='+${basestation.baseId}}"><img class="model_img" src="../static/images/model_1.jpg" th:src="@{'/images/'+${basestation.BaseImg}}"></a>
+        <p th:if="${basestation.jingdu}" th:text="已设置位置"></p>
+        <p th:unless="${basestation.jingdu}"><a th:href="@{'/addMarker?title='+${basestation.baseId}}">未设置位置</a></p>
+        <p th:text="${basestation.BaseName}">宏基站</p>
+        <p th:text="${basestation.BaseKind}">宏基站</p>
+        <input class="button" type="submit" th:onclick="'yulan('+${basestation.baseId}+')'" value="预览">&nbsp;
+        <input class="button" type="submit" th:onclick="'del('+${basestation.baseId}+')'" value="删除">&nbsp;
+        <input class="button_1" type="button" value="复制新基站" th:onclick="'copy('+${basestation.baseId}+')'"/>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">请填写基站信息</h4>
+            </div>
+            <div class="modal-body">
+                <ul>
+                    <li>基站名称 <input type='text' class='name'></li>
+                    <li>基站种类 <input type='text' class='baseKind' readonly='readonly'></li>
+                    <li><input class='baseimg' type='hidden'></li>
+                    <li><input class='baseurl' type='hidden'></li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="saveChange();">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    //预览基站
+    function yulan(t) {
+        layer.open({
+            type: 2,
+            title: '预览',
+            maxmin: true,
+            shadeClose: true, //点击遮罩关闭层
+            area: ['800px', '520px'],
+            content: 'lookOneBS?title=' + t
+        });
+    }
+    //删除
+    function  del(t) {
+        layer.alert('确定要删除吗？', function(){
+            $.ajax({
+                type: 'GET',
+                url: 'delBS',
+                data: {
+                    "baseId": t
+                },
+                dataType: 'text',
+                success: function (data) {
+                    location.reload(true);
+                    layer.msg('已删除!');
+                }
+            });
+        });
+    }
+    //复制
+    function copy(title) {
+        $.ajax({
+            type: 'GET',
+            url: 'queryBS',
+            data: {"title": title},
+            dataType: 'json',
+            success: function (data) {
+                $(".baseKind").val(data.baseKind);
+                $(".baseurl").val(data.baseUrl);
+                $(".baseimg").val(data.baseImg);
+                $("#myModal").modal({
+                    backdrop: false, // 相当于data-backdrop
+                    keyboard: false, // 相当于data-keyboard
+                    show: true // 相当于data-show
+                });
+            }
+        });
+    }
+
+    //保存基站信息
+    function saveChange() {
+        var name = $(".name").val();
+        var kind = $(".baseKind").val();
+        var url = $(".baseurl").val();
+        var img = $(".baseimg").val();
+        $.ajax({
+            type: 'GET',
+            url: 'copyBaseStation',
+            data: {
+                "BaseName": name,
+                "BaseImg": img,
+                "BaseKind": kind,
+                "BaseUrl": url
+            },
+            dataType: 'text',
+            success: function (data) {
+                $('#myModal').modal('hide');
+                location.reload(true);
+
+            }
+        });
+    }
+</script>
+</body>
+</html>
