@@ -449,7 +449,6 @@
     }
 
     function addControl(obj) {
-        alert(obj.id);
         curObj = obj;
         if (!obj.hasControl('axisControl')) {
             obj.addControl(new THING.AxisTransformControl(obj), 'axisControl');
