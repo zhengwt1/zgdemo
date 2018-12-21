@@ -32,7 +32,7 @@ public class AdminController {
      *
      * @return
      */
-    @RequestMapping("index")
+    @RequestMapping("/")
     public String index() {
         return "login.html";
     }
