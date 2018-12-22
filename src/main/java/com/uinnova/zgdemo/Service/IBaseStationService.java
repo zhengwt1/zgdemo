@@ -45,4 +45,13 @@ public interface IBaseStationService {
      * @return
      */
     public List<BaseStation> selectLikeName(String name);
+
+    /**
+     *修改基站的地图位置
+     * @param id 基站id
+     * @param jingdu 经度
+     * @param weidu 纬度
+     * @return
+     */
+    public int updateBSPosition(int id,String jingdu,String weidu);
 }

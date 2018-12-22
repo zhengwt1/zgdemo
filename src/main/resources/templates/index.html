@@ -12,16 +12,19 @@
             font-family: "宋体";
         }
     </style>
+
     <script type="text/javascript" th:src="@{/js/jquery.min.js}" src="../static/js/jquery.min.js"></script>
     <script type="text/javascript"
             src="http://api.map.baidu.com/api?v=2.0&ak=8LUM3pe66qdf0FaeyQwCGG7xtXZWpZSN"></script>
+    <script src="../static/layer-v3.1.1/layer/layer.js" th:src="@{/layer-v3.1.1/layer/layer.js}"></script>
     <title>首页</title>
 </head>
 <body>
 <header>
     <div>
         <img style="width:100px; " src="../static/images/thingjs.jpg" th:src="@{/images/thingjs.jpg}" alt="">
-        <a th:href="@{/admin}" href="#" style="float: right;">后台管理 </a>
+        <a th:href="@{/}" href="#" style="float: right;">退出 </a><span style="float: right;">|</span>
+        <a th:href="@{/admin}" href="#" style="float: right;">后台管理</a>
         <input type="hidden" th:value="${t}" class="t">
     </div>
 </header>
@@ -37,25 +40,33 @@
 
     //右击获取经纬度
     map.addEventListener("rightclick", function (e) {
-        var t=$(".t").val();
-        //创建图标
-        var pt = new BMap.Point(e.point.lng, e.point.lat);
-        var myIcon = new BMap.Icon("http://lbsyun.baidu.com/jsdemo/img/fox.gif", new BMap.Size(300, 157));
-        marker = new BMap.Marker(pt, {icon: myIcon});  // 创建标注
-         marker.setTitle(t);//给标注创建marker
-        $.ajax({
-            type: 'GET',
-            url: 'addMarkerPosition',
-            data: {"baseId": t,
-            "jingdu":e.point.lng,
-            "weidu":e.point.lat},
-            dataType: 'text',
-            success: function (data) {
-                window.location.href = "temp";
-            }
-        });
-        map.addOverlay(marker);// 将标注添加到地图中
+        layer.alert('您确定要设置位置吗？', function() {
+            var t = $(".t").val();
+            //创建图标
+            var pt = new BMap.Point(e.point.lng, e.point.lat);
+            var myIcon = new BMap.Icon("http://lbsyun.baidu.com/jsdemo/img/fox.gif", new BMap.Size(300, 157));
+            marker = new BMap.Marker(pt, {icon: myIcon});  // 创建标注
+            marker.setTitle(t);//给标注创建marker
+            $.ajax({
+                type: 'GET',
+                url: 'addMarkerPosition',
+                data: {
+                    "baseId": t,
+                    "jingdu": e.point.lng,
+                    "weidu": e.point.lat
+                },
+                success: function (data) {
+                    if (data=="no") {
+                        layer.msg('您设置的基站不存在!');
+                    }else {
+                        window.location.href = "temp";
+                        map.addOverlay(marker);// 将标注添加到地图中
+                    }
 
+                }
+            });
+
+        });
     });
 
     $(document).ready(function () {

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.Mapping;
 import com.uinnova.zgdemo.po.BaseStation;
 
@@ -37,5 +38,17 @@ public interface BaseStationMapper extends JpaRepository<BaseStation,Integer> {
      */
     @Query(value = "select * from basestation where BaseName like CONCAT('%',:name,'%')",nativeQuery = true)
     public List<BaseStation> selectLikeBSName(@Param("name") String name);
+
+    /**
+     *修改基站的地图位置
+     * @param id 基站id
+     * @param jingdu 经度
+     * @param weidu 纬度
+     * @return
+     */
+    @Transactional//开启事务管理
+    @Modifying
+    @Query(value = "update basestation set jingdu =:jingdu,weidu=:weidu where baseId=:id",nativeQuery = true)
+    public int updateBSPosition(@Param("id") int id,@Param("jingdu") String jingdu,@Param("weidu") String weidu);
 
 }

@@ -52,6 +52,9 @@ public class BaseStationServcieImpl implements IBaseStationService {
         System.out.print("name"+name);
         return baseStationMapper.selectLikeBSName(name);
     }
-
+    @Override
+    public int updateBSPosition(int id,String jingdu,String weidu){
+      return baseStationMapper.updateBSPosition(id,jingdu,weidu);
+    }
 
 }

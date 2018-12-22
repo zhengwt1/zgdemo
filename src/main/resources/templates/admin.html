@@ -101,7 +101,7 @@
 <div class="model" th:each="basestation:${bslist}">
     <div style="margin-left: 24px; margin-top: 10px">
         <a th:href="@{'/lookOneBS?title='+${basestation.baseId}}"><img class="model_img" src="../static/images/model_1.jpg" th:src="@{'/images/'+${basestation.BaseImg}}"></a>
-        <p th:if="${basestation.jingdu}" th:text="已设置位置"></p>
+        <p th:if="${basestation.jingdu}"><a th:href="@{'/addMarker?title='+${basestation.baseId}}">修改基站位置</a></p>
         <p th:unless="${basestation.jingdu}"><a th:href="@{'/addMarker?title='+${basestation.baseId}}">未设置位置</a></p>
         <p th:text="${basestation.BaseName}">宏基站</p>
         <p th:text="${basestation.BaseKind}">宏基站</p>
@@ -156,9 +156,8 @@
                 data: {
                     "baseId": t
                 },
-                dataType: 'text',
                 success: function (data) {
-                    if (data='no'){
+                    if (data=="no"){
                         layer.msg('您删除的是基础基站，不可删除!');
                     }else {
                         location.reload(true);

@@ -154,6 +154,15 @@ public class AdminController {
     @RequestMapping("addMarkerPosition")
     @ResponseBody
     public String addMarkerPosition(String baseId, BaseStation baseStation) {
+        if (""==baseId||null==baseId){
+            return "no";
+        }
+        if (null!=baseStationService.selectOne(baseId)){//判断基站是否已经制定位置
+            int baseid=Integer.parseInt(baseId);
+            System.out.print(baseStation.getJingdu()+baseStation.getWeidu());
+            baseStationService.updateBSPosition(baseid,baseStation.getJingdu(),baseStation.getWeidu());
+            return "ok";
+        }
         BaseStation bs = baseStationService.selectOne(baseId);
         bs.setJingdu(baseStation.getJingdu());
         bs.setWeidu(baseStation.getWeidu());
@@ -226,6 +235,11 @@ public class AdminController {
         return modelsList;
     }
 
+    /**
+     * 删除对应场景内的模型
+     * @param scene 场景的编号
+     * @return
+     */
     @RequestMapping("delModelsByScene")
     @ResponseBody
     public String delModelsByScene(String scene){
