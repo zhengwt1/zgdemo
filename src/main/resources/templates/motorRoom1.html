@@ -55,8 +55,8 @@
             <span><a onclick="showSpace();" href="#">空间统计</a></span>
             <span><a onclick="test();" href="#">打开机柜</a></span>
             <span><a onclick="test1();" href="#">关闭机柜</a></span>
-            <span><a onclick="destroy_curObj();" href="#">删除</a></span>
-            <a  th:href="@{/temp}">返回首页</a>
+            <span><a onclick="destroy_curObj();" href="#">删除所有模型</a></span>
+            <a th:href="@{/temp}">返回首页</a>
             <input type="hidden" th:value="${t}" class="scene"/>
         </div>
         <div class="col-md-6">
@@ -278,13 +278,13 @@
         if (obj.barGraph)
             return;
 
-       var box = app.create({
+        var box = app.create({
             type: 'Box',
             width: obj.size[0] * 0.9,
             height: obj.size[1],
             depth: obj.size[2] * 0.9,
             position: obj.position,
-            parent:obj,
+            parent: obj,
             center: 'Bottom'
         });
         obj.barGraph = box;
@@ -429,7 +429,8 @@
         addControl(ev.object);
     }, 'update');
 
-    var i=0;
+    var i = 0;
+
     function save(obj) {
         var scene = $(".scene").val();
         $.ajax({
@@ -450,8 +451,27 @@
         });
     }
 
+
     function addControl(obj) {
+        var scene = $(".scene").val();
         curObj = obj;
+        document.onkeydown = function (event) {
+            var e = event || window.event || arguments.callee.caller.arguments[0];
+            if (e && e.keyCode == 46) { // 按 Esc
+                $.ajax({
+                    type: 'GET',
+                    url: 'delModelsById',
+                    data: {
+                        "id": obj.id
+                    },
+                    dataType: 'text',
+                    success: function (data) {
+                        /*window.location.href = "lookOneBS?title=" + scene;*/
+                        obj.destroy();
+                    }
+                });
+            }
+        };
         if (!obj.hasControl('axisControl')) {
             obj.addControl(new THING.AxisTransformControl(obj), 'axisControl');
         }
