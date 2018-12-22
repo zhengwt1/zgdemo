@@ -4,6 +4,9 @@ import com.uinnova.zgdemo.po.BaseStation;
 
 import java.util.List;
 
+/**
+ * 基站接口
+ */
 public interface IBaseStationService {
     /**
      * 查询所有图标

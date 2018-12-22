@@ -52,6 +52,10 @@ public class AdminController {
         return "login.html";
     }
 
+    @RequestMapping("temp")
+    public String temp(String name, String password) {
+            return "index.html";
+    }
     /**
      * 跳转管理页
      *
@@ -63,6 +67,7 @@ public class AdminController {
         request.setAttribute("bslist", bsList);
         return "admin.html";
     }
+
 
     /**
      * 查询所有基站信息
@@ -164,6 +169,9 @@ public class AdminController {
     @RequestMapping("delBS")
     @ResponseBody
     public String delBS(int baseId) {
+        if (baseId==1 || baseId==2){
+            return "no";
+        }
         baseStationService.deleteBS(baseId);
         return "ok";
     }

@@ -49,9 +49,9 @@
             data: {"baseId": t,
             "jingdu":e.point.lng,
             "weidu":e.point.lat},
-            dataType: 'json',
+            dataType: 'text',
             success: function (data) {
-                location.reload(true);
+                window.location.href = "temp";
             }
         });
         map.addOverlay(marker);// 将标注添加到地图中

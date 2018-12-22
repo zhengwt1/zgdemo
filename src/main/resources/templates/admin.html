@@ -80,12 +80,16 @@
         ul li {
             list-style: none;
         }
+        .temp{
+            float:right;
+           color: #ac2925;
+        }
     </style>
 </head>
 <body>
 <header>
     <div ><img class="log" src="../static/images/thingjs.jpg"
-                               th:src="@{/images/thingjs.jpg}"></div>
+                               th:src="@{/images/thingjs.jpg}"> <a class="temp" th:href="@{/temp}">返回首页</a></div>
 
 </header>
 <div class="tip"><span class="size">基站模版</span><span class="color">可复制新基站场景</span></div>
@@ -154,8 +158,12 @@
                 },
                 dataType: 'text',
                 success: function (data) {
-                    location.reload(true);
-                    layer.msg('已删除!');
+                    if (data='no'){
+                        layer.msg('您删除的是基础基站，不可删除!');
+                    }else {
+                        location.reload(true);
+                        layer.msg('已删除!');
+                    }
                 }
             });
         });

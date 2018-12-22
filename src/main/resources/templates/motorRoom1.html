@@ -56,6 +56,7 @@
             <span><a onclick="test();" href="#">打开机柜</a></span>
             <span><a onclick="test1();" href="#">关闭机柜</a></span>
             <span><a onclick="destroy_curObj();" href="#">删除</a></span>
+            <a  th:href="@{/temp}">返回首页</a>
             <input type="hidden" th:value="${t}" class="scene"/>
         </div>
         <div class="col-md-6">
@@ -268,8 +269,8 @@
         } else {
             // 隐藏盒子，显示机柜
             obj.visible = true;
-            if (obj.barGraph)
-                obj.barGraph.visible = false;
+            /*if (obj.barGraph)*/
+            app.query('.Box').visible = false;
         }
     }
 
@@ -277,12 +278,13 @@
         if (obj.barGraph)
             return;
 
-        var box = app.create({
+       var box = app.create({
             type: 'Box',
             width: obj.size[0] * 0.9,
             height: obj.size[1],
             depth: obj.size[2] * 0.9,
             position: obj.position,
+            parent:obj,
             center: 'Bottom'
         });
         obj.barGraph = box;
@@ -317,7 +319,7 @@
                 for (let i = 0; i < data.length; i++) {
                     console.log("x:" + data[i].positionX + "y:" + data[i].positionY + "z:" + data[i].positionZ);
                     thing1 = app.create({
-                        id:data[i].modelId,
+                        id: data[i].modelId,
                         type: data[i].modelType,
                         url: data[i].modelUrl,
                         position: [data[i].positionX, data[i].positionY, data[i].positionZ],
