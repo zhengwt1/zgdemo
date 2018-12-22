@@ -36,6 +36,7 @@
     var map = new BMap.Map("allmap");
     var point = new BMap.Point(116.404, 39.915);
     map.centerAndZoom(point, 15);
+    map.enableScrollWheelZoom();//启动鼠标滚轮缩放地图
 
 
     //右击获取经纬度
@@ -70,6 +71,14 @@
     });
 
     $(document).ready(function () {
+        layer.prompt({title: '输入定位的城市', formType: 2}, function(text,index) {
+            layer.close(index);
+            var local = new BMap.LocalSearch(map, {
+                renderOptions:{map: map}
+            });
+            local.search(index);
+
+        });
         startMap();
     });
 
